@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class TaskProgress(Document):
-    task = EmbeddedDocumentField("Task")
+    task = Document("Task")
     date = DateTimeField()
     duration_in_secs = LongField()
 
