@@ -111,8 +111,8 @@ class TaskProgress(Document):
         return task_from_id(self.task_id).user_id
 
 
-def add_task_progress(user_id, task_id, date, duration_in_secs):
-    task_progress = TaskProgress(user_id=user_id, task_id=task_id, date=date, duration_in_secs=duration_in_secs)
+def add_task_progress(task_id, date, duration_in_secs):
+    task_progress = TaskProgress(task_id=task_id, date=date, duration_in_secs=duration_in_secs)
     task_progress.save()
     return task_progress.id
 
