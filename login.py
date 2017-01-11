@@ -14,10 +14,10 @@ class LoginRes(Resource):
         user = User.objects(username=username).first()
         if user is None:
             print("Could not find user")
-            return {"code": 0, "message": "User doesn't exist"}, 401
+            return {"code": 0, "message": "User doesn't exist", "token":""}, 401
         if password != user.password:
             print("user name and password mismatch")
-            return {"code": 0, "message": "User or password doesn't match"}, 401
+            return {"code": 0, "message": "User or password doesn't match", "token":""}, 401
 
         token = user_token.generate()
         User.objects().with_id(user.id).update(set__token=token)
