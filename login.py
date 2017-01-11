@@ -31,7 +31,7 @@ class RegisterRes(Resource):
         password = args["password"]
         found_user = User.objects(username=username).first()
         if found_user is not None:
-            return {"code": 0, "message": "User already exists"}, 400
+            return {"code": 0, "message": "User already exists", "token":""}, 400
         user = User(username=username, password=password, token=user_token.generate())
         user.save()
         return {"code": 1, "message": 'Registered', "token": user.token}, 200
