@@ -6,8 +6,9 @@ def date_from_iso8601(date_time_str):
     else:
         return None
 
-def date_from_str(date_time_str):
-    if date_time_str != None and date_time_str != "":
-        return datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
+
+def toISO8601(datetime):
+    if datetime != None and datetime != "":
+        return datetime.strptime(str(datetime), '%Y-%m-%d %H:%M:%S').isoformat()
     else:
-        return None
+        return ""

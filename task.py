@@ -29,7 +29,7 @@ class Task(Document):
             "id": str(self.id),
             "local_id": self.local_id,
             "name" : self.name,
-            "due_date": utils.date_from_str(str(self.due_date)).isoformat(),
+            "due_date": utils.toISO8601(self.due_date),
             "color": self.color,
             "payment_per_hour" : self.payment_per_hour,
             "done" : self.done

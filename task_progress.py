@@ -103,7 +103,7 @@ class TaskProgress(Document):
         return {
             "id": str(self.id),
             "task": task_from_id(self.task_id).get_json(),
-            "date": utils.date_from_str(str(self.date)).isoformat(),
+            "date": utils.toISO8601(self.date),
             "duration_in_secs": self.duration_in_secs
         }
 
