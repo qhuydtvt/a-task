@@ -108,7 +108,13 @@ class TaskProgress(Document):
         }
 
     def get_user_id(self):
-        return task_from_id(self.task_id).user_id
+        # print("getting user id...")
+        # print(self.task_id)
+        task = task_from_id(self.task_id)
+        if task is not None:
+            return task.user_id
+        else:
+            return None
 
 
 def add_task_progress(task_id, date, duration_in_secs):
