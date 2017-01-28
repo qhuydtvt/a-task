@@ -76,7 +76,7 @@ class TaskRes(Resource):
         args = parser.parse_args()
         user_id = current_identity.id
 
-        task = Task.objects().with_id(task_id)
+        task = Task.objects(id=task_id, user_id=user_id).first()
 
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
@@ -90,10 +90,8 @@ class TaskRes(Resource):
         args = parser.parse_args()
         user_id = current_identity.id
 
-        task = Task.objects().with_id(task_id)
+        task = Task.objects(id=task_id, user_id=user_id).first()
 
-        if str(task.user_id) != user_id:
-            return {"code": 0, "message": "This task is not yours, fuck off"}, 401
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
         else:
@@ -105,11 +103,9 @@ class TaskRes(Resource):
         args = parser.parse_args()
         user_id = current_identity.id
 
-        task = Task.objects().with_id(task_id)
+        task = Task.objects(id=task_id, user_id=user_id).first()
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
-        elif task.user_id != user_id:
-            return {"code": 0, "message": "This taks is not yours, fuck off"}, 401
         else:
             args = parser.parse_args()
             local_id = args["local_id"]

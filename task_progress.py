@@ -29,11 +29,9 @@ class TaskProgressListRes(Resource):
         date = utils.date_from_iso8601(args["date"])
         duration_in_secs = args["duration_in_secs"]
 
-        task = Task.objects().with_id(task_id)
+        task = Task.objects(id=task_id, user_id=user_id).first()
         if task is None:
             return {"code": 0, "message": "Task not found"}, 404
-        elif task.user_id != user_id:
-            return {"code": 0, "message": "This task progress is not yours, fuck off"}, 401
         else:
             task_progress_id = add_task_progress(
                 task_id=task_id,
@@ -50,10 +48,8 @@ class TaskProgressRes(Resource):
         user_id = current_identity.id
 
         task_progress = TaskProgress.objects().with_id(task_progress_id)
-        if task_progress is None:
+        if task_progress is None or str(task_progress.get_user_id()) != user_id:
             return {"code": 0, "message": "Task progress not found"}, 404
-        elif task_progress.get_user_id() != user_id:
-            return {"code": 0, "message": "This task progress is not yours, fuck off"}, 401
         else:
             return task_progress.get_json(), 200
 
@@ -63,10 +59,8 @@ class TaskProgressRes(Resource):
         user_id = current_identity.id
 
         task_progress = TaskProgress.objects().with_id(task_progress_id)
-        if task_progress is None:
+        if task_progress is None or str(task_progress.get_user_id()) != user_id:
             return {"code": 0, "message": "Task progress not found"}, 404
-        elif task_progress.get_user_id() != user_id:
-            return {"code": 0, "message": "This task is not yours, fuck off"}, 401
         else:
             args = parser.parse_args()
             date = utils.date_from_iso8601(args["date"])
@@ -80,10 +74,8 @@ class TaskProgressRes(Resource):
         user_id = current_identity.id
 
         task_progress = TaskProgress.objects().with_id(task_progress_id)
-        if task_progress is None:
+        if task_progress is None or str(task_progress.get_user_id()) != user_id:
             return {"code": 0, "message": "Task progress not found"}, 404
-        elif task_progress.get_user_id() != user_id:
-            return {"code": 0, "message": "This task is not yours, fuck off"}, 401
         else:
             task_progress.delete()
             return {"code": 1, "message": "Task progress deleted"}, 200
