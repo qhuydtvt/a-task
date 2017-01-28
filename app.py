@@ -12,7 +12,7 @@ import user_token
 import mlab
 from task import TaskListRes, TaskRes
 from task_progress import TaskProgressListRes, TaskProgressRes
-from login import LoginRes, RegisterRes, jwt_init
+from login import RegisterRes, jwt_init
 from bson.objectid import ObjectId
 
 app = Flask(__name__)
