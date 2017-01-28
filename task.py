@@ -39,6 +39,9 @@ class Task(Document):
 def task_from_id(id):
     return Task.objects().with_id(id)
 
+# def task_from_local_id(local_id):
+#     return Task.objects(local_id=local_id).first()
+
 class TaskListRes(Resource):
 
     @jwt_required()
@@ -76,7 +79,7 @@ class TaskRes(Resource):
         args = parser.parse_args()
         user_id = current_identity.id
 
-        task = Task.objects(id=task_id, user_id=user_id).first()
+        task = Task.objects(local_id=task_id, user_id=user_id).first()
 
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
@@ -88,7 +91,7 @@ class TaskRes(Resource):
         args = parser.parse_args()
         user_id = current_identity.id
 
-        task = Task.objects(id=task_id, user_id=user_id).first()
+        task = Task.objects(local_id=task_id, user_id=user_id).first()
 
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
@@ -101,7 +104,8 @@ class TaskRes(Resource):
         args = parser.parse_args()
         user_id = current_identity.id
 
-        task = Task.objects(id=task_id, user_id=user_id).first()
+        task = Task.objects(local_id=task_id, user_id=user_id).first()
+
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
         else:

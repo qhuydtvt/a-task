@@ -29,5 +29,6 @@ api.add_resource(TaskProgressRes, "/api/task-progress/<task_progress_id>")
 # api.add_resource(LoginRes, "/api/login")
 api.add_resource(RegisterRes, "/api/register")
 
+
 if __name__ == '__main__':
     app.run(port=9696)

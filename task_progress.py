@@ -10,7 +10,7 @@ parser.add_argument('token', type=str, help='Token of noter', location="headers"
 parser.add_argument("task_id", type=str, help="Id of task")
 parser.add_argument("date", type=str, help="Date of progress")
 parser.add_argument("duration_in_secs", type=int, help="Duration of task progress")
-
+parser.add_argument("local_id", type=int, help="Local id of task progress")
 
 class TaskProgressListRes(Resource):
     @jwt_required()
@@ -29,7 +29,7 @@ class TaskProgressListRes(Resource):
         date = utils.date_from_iso8601(args["date"])
         duration_in_secs = args["duration_in_secs"]
 
-        task = Task.objects(id=task_id, user_id=user_id).first()
+        task = Task.objects(local_id=task_id, user_id=user_id).first()
         if task is None:
             return {"code": 0, "message": "Task not found"}, 404
         else:
@@ -38,7 +38,6 @@ class TaskProgressListRes(Resource):
                 date=date,
                 duration_in_secs=duration_in_secs)
             return get_task_progress(task_progress_id).get_json(), 200
-
 
 class TaskProgressRes(Resource):
 
