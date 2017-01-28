@@ -80,8 +80,6 @@ class TaskRes(Resource):
 
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
-        elif task.user_id != user_id:
-            return {"code": 0, "message": "This taks is not yours, fuck off"}, 401
         else:
             return task.get_json(), 200
 
