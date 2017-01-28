@@ -17,7 +17,7 @@ parser.add_argument("payment_per_hour", type=float, help="Payment rate of task")
 parser.add_argument("done", type=bool, help="Status of task")
 
 class Task(Document):
-    user_id = ObjectIdField()
+    user = ReferenceField("User")
     local_id = StringField()
     name = StringField()
     due_date = DateTimeField()
@@ -46,22 +46,22 @@ class TaskListRes(Resource):
 
     @jwt_required()
     def get(self):
-        user_id = current_identity.id
-        tasks = Task.objects(user_id=user_id)
+        user = current_identity.user()
+        tasks = Task.objects(user=user)
         return [task.get_json() for task in tasks], 200
 
     @jwt_required()
     def post(self):
         args = parser.parse_args()
 
-        user_id = current_identity.id
+        user = current_identity.user()
         local_id = args["local_id"]
         name = args["name"]
         due_date = utils.date_from_iso8601(args["due_date"])
         color = args["color"]
         payment_per_hour = args["payment_per_hour"]
 
-        task = Task(user_id=user_id,
+        task = Task(user=user,
                     local_id=local_id,
                     name=name,
                     due_date=due_date,
@@ -77,9 +77,8 @@ class TaskRes(Resource):
     @jwt_required()
     def get(self, task_id):
         args = parser.parse_args()
-        user_id = current_identity.id
-
-        task = Task.objects(local_id=task_id, user_id=user_id).first()
+        user = current_identity.user()
+        task = Task.objects(local_id=task_id, user=user).first()
 
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
@@ -89,9 +88,8 @@ class TaskRes(Resource):
     @jwt_required()
     def delete(self, task_id):
         args = parser.parse_args()
-        user_id = current_identity.id
-
-        task = Task.objects(local_id=task_id, user_id=user_id).first()
+        user = current_identity.user()
+        task = Task.objects(local_id=task_id, user=user).first()
 
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
@@ -102,9 +100,8 @@ class TaskRes(Resource):
     @jwt_required()
     def put(self, task_id):
         args = parser.parse_args()
-        user_id = current_identity.id
-
-        task = Task.objects(local_id=task_id, user_id=user_id).first()
+        user = current_identity.user()
+        task = Task.objects(local_id=task_id, user=user).first()
 
         if task is None:
             return {"code": 0, "message": "Not found"}, 404

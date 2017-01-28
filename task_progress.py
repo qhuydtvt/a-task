@@ -16,25 +16,28 @@ class TaskProgressListRes(Resource):
     @jwt_required()
     def get(self):
         args = parser.parse_args()
-        user_id = current_identity.id
+        user = current_identity.user()
+        task_progress_list = TaskProgress.objects(user=user)
 
-        return [task_progress.get_json() for task_progress in TaskProgress.objects() if task_progress.get_user_id()==user_id], 200
+        return [task_progress.get_json() for task_progress in task_progress_list], 200
 
     @jwt_required()
     def post(self):
         args = parser.parse_args()
-        user_id = current_identity.id
+
+        user = current_identity.user()
 
         task_id = args["task_id"]
         date = utils.date_from_iso8601(args["date"])
         duration_in_secs = args["duration_in_secs"]
 
-        task = Task.objects(local_id=task_id, user_id=user_id).first()
+        task = Task.objects(local_id=task_id, user=user).first()
         if task is None:
             return {"code": 0, "message": "Task not found"}, 404
         else:
             task_progress_id = add_task_progress(
-                task_id=task_id,
+                user=user,
+                task=task,
                 date=date,
                 duration_in_secs=duration_in_secs)
             return get_task_progress(task_progress_id).get_json(), 200
@@ -44,21 +47,20 @@ class TaskProgressRes(Resource):
     @jwt_required()
     def get(self, task_progress_id):
         args = parser.parse_args()
-        user_id = current_identity.id
+        user = current_identity.user()
 
-        task_progress = TaskProgress.objects().with_id(task_progress_id)
-        if task_progress is None or str(task_progress.get_user_id()) != user_id:
+        task_progress = TaskProgress.objects(id=task_progress_id, user=user).first()
+        if task_progress is None:
             return {"code": 0, "message": "Task progress not found"}, 404
         else:
             return task_progress.get_json(), 200
 
     @jwt_required()
     def put(self, task_progress_id):
-        args = parser.parse_args()
-        user_id = current_identity.id
+        user = current_identity.user()
 
-        task_progress = TaskProgress.objects().with_id(task_progress_id)
-        if task_progress is None or str(task_progress.get_user_id()) != user_id:
+        task_progress = TaskProgress.objects(id=task_progress_id, user=user).first()
+        if task_progress is None:
             return {"code": 0, "message": "Task progress not found"}, 404
         else:
             args = parser.parse_args()
@@ -69,11 +71,10 @@ class TaskProgressRes(Resource):
 
     @jwt_required()
     def delete(self, task_progress_id):
-        args = parser.parse_args()
-        user_id = current_identity.id
+        user = current_identity.user()
 
-        task_progress = TaskProgress.objects().with_id(task_progress_id)
-        if task_progress is None or str(task_progress.get_user_id()) != user_id:
+        task_progress = TaskProgress.objects(id=task_progress_id, user=user).first()
+        if task_progress is None:
             return {"code": 0, "message": "Task progress not found"}, 404
         else:
             task_progress.delete()
@@ -81,31 +82,22 @@ class TaskProgressRes(Resource):
 
 
 class TaskProgress(Document):
-    user_id = ObjectIdField()
-    task_id = ObjectIdField()
+    user = ReferenceField("User")
+    task = ReferenceField("Task")
     date = DateTimeField()
     duration_in_secs = LongField()
 
     def get_json(self):
         return {
             "id": str(self.id),
-            "task": task_from_id(self.task_id).get_json(),
+            "task": self.task.get_json(),
             "date": utils.toISO8601(self.date),
             "duration_in_secs": self.duration_in_secs
         }
 
-    def get_user_id(self):
-        # print("getting user id...")
-        # print(self.task_id)
-        task = task_from_id(self.task_id)
-        if task is not None:
-            return task.user_id
-        else:
-            return None
 
-
-def add_task_progress(task_id, date, duration_in_secs):
-    task_progress = TaskProgress(task_id=task_id, date=date, duration_in_secs=duration_in_secs)
+def add_task_progress(user, task, date, duration_in_secs):
+    task_progress = TaskProgress(user=user, task=task, date=date, duration_in_secs=duration_in_secs)
     task_progress.save()
     return task_progress.id
 

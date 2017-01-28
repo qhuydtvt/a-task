@@ -1,10 +1,11 @@
 import mongoengine
 
 #mongodb://<dbuser>:<dbpassword>@ds159208.mlab.com:59208/a-task
-
-host = "ds159208.mlab.com"
-port = 59208
-db_name = "a-task"
+#v2:
+#mongodb://<dbuser>:<dbpassword>@ds135519.mlab.com:35519/a-task-v2
+host = "ds135519.mlab.com"
+port = 35519
+db_name = "a-task-v2"
 user_name = "admin"
 password = "admin"
 
