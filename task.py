@@ -4,6 +4,7 @@ import utils
 import user_token
 from user import *
 from flask_restful import Resource, reqparse
+from flask_jwt import jwt_required, current_identity
 
 parser = reqparse.RequestParser()
 parser.add_argument('token', type=str, help='Token of noter', location="headers")
@@ -40,29 +41,24 @@ def task_from_id(id):
 
 class TaskListRes(Resource):
 
+    @jwt_required()
     def get(self):
-        args = parser.parse_args()
-        token = args["token"]
-        user = user_from_token(token)
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": token}, 401
-
-        tasks = Task.objects(user_id=user.id)
+        user_id = current_identity.id
+        tasks = Task.objects(user_id=user_id)
         return [task.get_json() for task in tasks], 200
 
+    @jwt_required()
     def post(self):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
 
+        user_id = current_identity.id
         local_id = args["local_id"]
         name = args["name"]
         due_date = utils.date_from_iso8601(args["due_date"])
         color = args["color"]
         payment_per_hour = args["payment_per_hour"]
 
-        task = Task(user_id=user.id,
+        task = Task(user_id=user_id,
                     local_id=local_id,
                     name=name,
                     due_date=due_date,
@@ -75,49 +71,44 @@ class TaskListRes(Resource):
 
 
 class TaskRes(Resource):
+    @jwt_required()
     def get(self, task_id):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
+        user_id = current_identity.id
 
         task = Task.objects().with_id(task_id)
 
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
-        elif task.user_id != user.id:
+        elif task.user_id != user_id:
             return {"code": 0, "message": "This taks is not yours, fuck off"}, 401
         else:
             return task.get_json(), 200
 
+    @jwt_required()
     def delete(self, task_id):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
+        user_id = current_identity.id
 
         task = Task.objects().with_id(task_id)
 
-        if task.user_id != user.id:
-            return {"code": 0, "message": "This taks is not yours, fuck off"}, 401
-        elif task.user_id != user.id:
-            return {"code": 0, "message": "This taks is not yours, fuck off"}, 401
+        if task.user_id != user_id:
+            return {"code": 0, "message": "This task is not yours, fuck off"}, 401
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
         else:
             task.delete()
             return {"code": 1, "message": "Deleted"}, 200
 
+    @jwt_required()
     def put(self, task_id):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
+        user_id = current_identity.id
 
         task = Task.objects().with_id(task_id)
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
-        elif task.user_id != user.id:
+        elif task.user_id != user_id:
             return {"code": 0, "message": "This taks is not yours, fuck off"}, 401
         else:
             args = parser.parse_args()

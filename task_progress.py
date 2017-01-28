@@ -1,6 +1,7 @@
 from mongoengine import *
 from task import *
 from datetime import datetime
+from flask_jwt import jwt_required
 
 parser = reqparse.RequestParser()
 
@@ -12,20 +13,17 @@ parser.add_argument("duration_in_secs", type=int, help="Duration of task progres
 
 
 class TaskProgressListRes(Resource):
+    @jwt_required()
     def get(self):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
+        user_id = current_identity.id
 
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
+        return [task_progress.get_json() for task_progress in TaskProgress.objects() if task_progress.get_user_id()==user_id], 200
 
-        return [task_progress.get_json() for task_progress in TaskProgress.objects() if task_progress.get_user_id()==user.id], 200
-
+    @jwt_required()
     def post(self):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
+        user_id = current_identity.id
 
         task_id = args["task_id"]
         date = utils.date_from_iso8601(args["date"])
@@ -34,8 +32,8 @@ class TaskProgressListRes(Resource):
         task = Task.objects().with_id(task_id)
         if task is None:
             return {"code": 0, "message": "Task not found"}, 404
-        elif task.user_id != user.id:
-            return {"code": 0, "message": "This task is not yours, fuck off"}, 401
+        elif task.user_id != user_id:
+            return {"code": 0, "message": "This task progress is not yours, fuck off"}, 401
         else:
             task_progress_id = add_task_progress(
                 task_id=task_id,
@@ -45,30 +43,29 @@ class TaskProgressListRes(Resource):
 
 
 class TaskProgressRes(Resource):
+
+    @jwt_required()
     def get(self, task_progress_id):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
+        user_id = current_identity.id
 
         task_progress = TaskProgress.objects().with_id(task_progress_id)
         if task_progress is None:
             return {"code": 0, "message": "Task progress not found"}, 404
-        elif task_progress.get_user_id() != user.id:
-            return {"code": 0, "message": "This task is not yours, fuck off"}, 401
+        elif task_progress.get_user_id() != user_id:
+            return {"code": 0, "message": "This task progress is not yours, fuck off"}, 401
         else:
             return task_progress.get_json(), 200
 
+    @jwt_required()
     def put(self, task_progress_id):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
+        user_id = current_identity.id
 
         task_progress = TaskProgress.objects().with_id(task_progress_id)
         if task_progress is None:
             return {"code": 0, "message": "Task progress not found"}, 404
-        elif task_progress.get_user_id() != user.id:
+        elif task_progress.get_user_id() != user_id:
             return {"code": 0, "message": "This task is not yours, fuck off"}, 401
         else:
             args = parser.parse_args()
@@ -77,16 +74,15 @@ class TaskProgressRes(Resource):
             task_progress.update(set__date=date, set__duration_in_secs=duration_in_secs)
             return TaskProgress.objects().with_id(task_progress_id).get_json(), 200
 
+    @jwt_required()
     def delete(self, task_progress_id):
         args = parser.parse_args()
-        user = user_from_token(args["token"])
-        if user is None:
-            return {"code": 0, "message": "Not authorized", "token": args["token"]}, 401
+        user_id = current_identity.id
 
         task_progress = TaskProgress.objects().with_id(task_progress_id)
         if task_progress is None:
             return {"code": 0, "message": "Task progress not found"}, 404
-        elif task_progress.get_user_id() != user.id:
+        elif task_progress.get_user_id() != user_id:
             return {"code": 0, "message": "This task is not yours, fuck off"}, 401
         else:
             task_progress.delete()

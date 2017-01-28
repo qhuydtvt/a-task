@@ -7,15 +7,17 @@ from datetime import datetime
 import utils
 import json
 
-from user import *
+from task import Task
 import user_token
 import mlab
 from task import TaskListRes, TaskRes
 from task_progress import TaskProgressListRes, TaskProgressRes
-from login import LoginRes, RegisterRes
+from login import LoginRes, RegisterRes, jwt_init
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 api = Api(app)
+jwt = jwt_init(app)
 mlab.connect()
 
 api.add_resource(TaskListRes, "/api/task")
@@ -24,7 +26,7 @@ api.add_resource(TaskRes, "/api/task/<task_id>")
 api.add_resource(TaskProgressListRes, "/api/task-progress")
 api.add_resource(TaskProgressRes, "/api/task-progress/<task_progress_id>")
 
-api.add_resource(LoginRes, "/api/login")
+# api.add_resource(LoginRes, "/api/login")
 api.add_resource(RegisterRes, "/api/register")
 
 if __name__ == '__main__':

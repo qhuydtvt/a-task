@@ -13,6 +13,8 @@ class User(Document):
             "token": self.token
         }
 
+def find(username):
+    return User.objects(username=username).first()
 
 def user_from_token(token):
   return User.objects(token=token).first()
