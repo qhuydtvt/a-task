@@ -5,6 +5,7 @@ import user_token
 from user import *
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required, current_identity
+from task_progress import *
 
 parser = reqparse.RequestParser()
 parser.add_argument('token', type=str, help='Token of noter', location="headers")
@@ -94,6 +95,8 @@ class TaskRes(Resource):
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
         else:
+            for task_progress in TaskProgress.objects(task=task):
+                task_progress.delete()
             task.delete()
             return {"code": 1, "message": "Deleted"}, 200
 
