@@ -92,7 +92,7 @@ class TaskRes(Resource):
 
         task = Task.objects().with_id(task_id)
 
-        if task.user_id != user_id:
+        if str(task.user_id) != user_id:
             return {"code": 0, "message": "This task is not yours, fuck off"}, 401
         if task is None:
             return {"code": 0, "message": "Not found"}, 404
