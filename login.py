@@ -39,7 +39,7 @@ class RegisterRes(Resource):
 
 def authenticate(username, password):
     user = find(username)
-    if safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
+    if user is not None and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
         return LoginCredentials.create(user)
 
 def identity(payload):
